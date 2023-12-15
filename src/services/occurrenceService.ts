@@ -1,6 +1,10 @@
 import { prisma } from '../database/prisma';
 import { IGetOccurrence, type ICreateOccurrence } from '../dtos/OccurrenceDTO';
-import { InternalServerError, NotFoundError } from '../helpers/api-errors';
+import {
+  BadRequestError,
+  InternalServerError,
+  NotFoundError
+} from '../helpers/api-errors';
 
 const createOccurrence = async (occurrence: ICreateOccurrence, files: any) => {
   const { title, description, dateTime, status, location, userId, employeeId } =
@@ -79,9 +83,50 @@ const deleteOccurencies = async (id: string) => {
   }
 };
 
+const updateOccurrenceStatus = async (id: string, status: string) => {
+  if (!id || !status) {
+    throw new BadRequestError('Id and status are required');
+  }
+  let newStatus: string;
+  switch (status.toLowerCase()) {
+    case 'open':
+      newStatus = 'open';
+      break;
+    case 'in progress':
+      newStatus = 'in progress';
+      break;
+    case 'resolved':
+      newStatus = 'resolved';
+      break;
+    default:
+      throw new BadRequestError('Invalid status');
+  }
+  const oc = await prisma.occurrence.findUnique({
+    where: {
+      id
+    }
+  });
+  if (!oc) {
+    throw new NotFoundError('Occurrence not found');
+  }
+  const updatedOccurrence = await prisma.occurrence.update({
+    where: {
+      id
+    },
+    data: {
+      status: newStatus.toUpperCase()
+    }
+  });
+  if (!updatedOccurrence) {
+    throw new InternalServerError('Error on update occurrence');
+  }
+
+  return updatedOccurrence;
+};
 export default {
   createOccurrence,
   findAllOccurencies,
   updateOccurencies,
+  updateOccurrenceStatus,
   deleteOccurencies
 };

@@ -41,6 +41,15 @@ const update = async (req: Request, res: Response) => {
   return res.send(occ);
 };
 
+const updateStatus = async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const { status } = req.body;
+
+  const occ = await occurrenceService.updateOccurencies(id, status);
+
+  return res.send(occ);
+};
+
 const destroy = async (req: Request, res: Response) => {
   const { id } = req.params;
 
@@ -53,5 +62,6 @@ export const occurrenceController = {
   store,
   index,
   update,
+  updateStatus,
   destroy
 };
