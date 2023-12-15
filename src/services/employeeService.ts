@@ -24,7 +24,7 @@ interface TokenType {
 }
 
 const generateToken = ({ email }: TokenType) => {
-  const token = jwt.sign({ email }, process.env.JWT_SECRET ?? '', {
+  const token = jwt.sign({ email }, process.env.JWT_ADMIN_SECRET ?? '', {
     expiresIn: '8h'
   });
   return token;
@@ -91,7 +91,10 @@ const createEmployee = async (data: ICreateEmployee) => {
     throw new BadRequestError('Data is required');
   }
   const employee = await prisma.employee.create({
-    data
+    data: {
+      ...data,
+      password: await hashPassword(data.password)
+    }
   });
   if (!employee) {
     throw new InternalServerError('Employee not created');
@@ -115,7 +118,10 @@ const updateEmployee = async (email: string, data: IUpdateEmployee) => {
     where: {
       email
     },
-    data
+    data: {
+      ...data,
+      password: await hashPassword(String(data.password))
+    }
   });
   if (!employee) {
     throw new InternalServerError('Employee not updated');

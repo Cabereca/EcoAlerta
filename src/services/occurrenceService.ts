@@ -96,8 +96,8 @@ const updateOccurrenceStatus = async (
     case 'open':
       newStatus = 'open';
       break;
-    case 'in progress':
-      newStatus = 'in progress';
+    case 'in_progress':
+      newStatus = 'in_progress';
       break;
     case 'resolved':
       newStatus = 'resolved';

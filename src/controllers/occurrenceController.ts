@@ -51,13 +51,13 @@ const update = async (req: Request, res: Response) => {
 
 const updateStatus = async (req: Request, res: Response) => {
   const { id } = req.params;
-  const { status } = req.body;
-  const { employeeId } = req.body;
+  const { status } = req.params;
+  const { employeeId } = req.headers;
 
   const occ = await occurrenceService.updateOccurrenceStatus(
     id,
     status,
-    employeeId
+    employeeId as string
   );
 
   return res.send(occ);

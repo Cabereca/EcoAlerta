@@ -9,7 +9,7 @@ const routes = Router();
 
 const upload = multer(uploadsConfig);
 
-routes.get('/', userMiddleware, occurrenceController.index);
+routes.get('/', adminMiddleware, occurrenceController.index);
 routes.post(
   '/',
   userMiddleware,
@@ -17,7 +17,11 @@ routes.post(
   occurrenceController.store
 );
 routes.put('/:id', userMiddleware, occurrenceController.update);
-routes.patch('/:id', adminMiddleware, occurrenceController.updateStatus);
+routes.patch(
+  '/:id/:status',
+  adminMiddleware,
+  occurrenceController.updateStatus
+);
 routes.delete('/:id', userMiddleware, occurrenceController.destroy);
 
 export default routes;

@@ -20,10 +20,13 @@ export const adminMiddleware = async (
     throw new UnauthorizedError('Não autorizado');
   }
   const [, token] = authorization.split(' ');
-  const { email } = jwt.verify(token, process.env.JWT_SECRET ?? '') as jwtDTO;
+  const { email } = jwt.verify(
+    token,
+    process.env.JWT_ADMIN_SECRET ?? ''
+  ) as jwtDTO;
 
   let employee;
-  const cache = await redisClient.get('employee:' + email);
+  const cache = await redisClient.get(`employee:${email}`);
 
   if (cache) {
     employee = JSON.parse(cache);

@@ -46,13 +46,15 @@ const employeeLogin = async (req: Request, res: Response) => {
   if (cache) {
     employee = JSON.parse(cache);
   } else {
-    employee = await userServices.findUserByEmail(email);
+    employee = await employeeService.findEmployeeByEmail(email);
     if (!employee) {
       throw new NotFoundError('Employee not Found');
     }
     await client.set('employee:' + email, JSON.stringify(employee));
   }
   const verifyPassword = await bcrypt.compare(password, employee.password);
+  console.log(verifyPassword, employee.password, password);
+
   if (!verifyPassword) {
     throw new UnauthorizedError('Usuário ou senha incorretos');
   }
