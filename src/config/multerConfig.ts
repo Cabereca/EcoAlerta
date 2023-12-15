@@ -1,20 +1,42 @@
+import { Options } from 'multer';
 import multer from 'multer';
 import path from 'path';
 import crypto from 'crypto';
 
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, path.resolve(__dirname, '..', '..', 'tmp', 'uploads')); // Diretório onde ficarão os arquivos
+const multerConfig: Options = {
+  storage: multer.diskStorage({
+    destination: path.join(__dirname, '..', '..', 'uploads'),
+    filename(req, file, callback) {
+      callback(
+        null,
+        `${crypto.randomBytes(6).toString('hex')}-${file.originalname}`
+      );
+    }
+  }),
+  limits: {
+    fileSize: 8 * 1024 * 1024
   },
-  filename: (req, file, cb) => {
-    crypto.randomBytes(16, (err, hash) => {
-      if (err) cb(err, '');
+  fileFilter(req, file, cb) {
+    const mimeTypes = [
+      'image/png',
+      'image/jpeg',
+      'image/jpg',
+      'video/mp4',
+      'video/mov',
+      'video/avi',
+      'video/mkv',
+      'video/flv',
+      'video/wmv',
+      'video/3gp',
+      'video/mpeg',
+      'video/webm'
+    ];
 
-      const fileName = `${hash.toString('hex')}-${file.originalname}`;
-
-      cb(null, fileName);
-    });
+    if (!mimeTypes.includes(file.mimetype)) {
+      return cb(null, false);
+    }
+    cb(null, true);
   }
-});
+};
 
-export default storage;
+export default multerConfig;

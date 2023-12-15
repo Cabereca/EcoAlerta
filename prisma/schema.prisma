@@ -3,11 +3,13 @@
 
 generator client {
   provider = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
 }
 
 datasource db {
   provider = "postgresql"
   url      = env("DB_URL")
+  extensions = [postgis]
 }
 
 model User {
@@ -42,10 +44,14 @@ model ImageOccurrence {
 
 model Occurrence {
   id          String @id @default(uuid())
-  description String @unique
-  name        String
-  email       String
-  phone       String
+  title       String
+  description String
+  status      String
+  feedback    String?
+  dateTime    DateTime
+  created_at  DateTime @default(now())
+  updated_at  DateTime @default(now())
+  location    Unsupported("geography(Point, 4326)")
 
   User   User   @relation(fields: [userId], references: [id])
   userId String
@@ -54,4 +60,5 @@ model Occurrence {
   employeeId String?
 
   ImageOccurrence ImageOccurrence[]
+  @@index([location], name: "location_idx", type: Gist)
 }
