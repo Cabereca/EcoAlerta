@@ -1,0 +1,64 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DB_URL")
+  extensions = [postgis]
+}
+
+model User {
+  id         String       @id @default(uuid())
+  cpf        String       @unique
+  name       String
+  email      String       @unique
+  phone      String
+  password   String
+  occurrence Occurrence[]
+}
+
+model Employee {
+  id                 String       @id @default(uuid())
+  registrationNumber String       @unique
+  name               String
+  email              String       @unique
+  phone              String
+  password           String
+  occurrence         Occurrence[]
+}
+
+model ImageOccurrence {
+  id         String   @id @default(uuid())
+  path       String
+  created_at DateTime @default(now())
+  updated_at DateTime @default(now())
+
+  Occurrence   Occurrence @relation(fields: [occurrenceId], references: [id], onDelete: Cascade)
+  occurrenceId String
+}
+
+model Occurrence {
+  id          String @id @default(uuid())
+  title       String
+  description String
+  status      String
+  feedback    String?
+  dateTime    DateTime
+  created_at  DateTime @default(now())
+  updated_at  DateTime @default(now())
+  location    Unsupported("geography(Point, 4326)")
+
+  User   User   @relation(fields: [userId], references: [id])
+  userId String
+
+  Employee   Employee? @relation(fields: [employeeId], references: [id])
+  employeeId String?
+
+  ImageOccurrence ImageOccurrence[]
+  @@index([location], name: "location_idx", type: Gist)
+}

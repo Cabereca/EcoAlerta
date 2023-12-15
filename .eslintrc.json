@@ -1,0 +1,33 @@
+{
+  "env": {
+    "es2021": true,
+    "node": true
+  },
+  "plugins": ["@ts-safeql/eslint-plugin"],
+  "extends": ["standard-with-typescript", "prettier"],
+  "parserOptions": {
+    "ecmaVersion": "latest",
+    "sourceType": "module"
+  },
+  "rules": {
+    "@ts-safeql/check-sql": [
+      "error",
+      {
+        "connections": [
+          {
+            "connectionUrl": "process.env.DB_URL",
+            // The migrations path:
+            "migrationsDir": "./prisma/migrations",
+            "targets": [
+              // This makes `prisma.$queryRaw` and `prisma.$executeRaw` commands linted
+              {
+                "tag": "prisma.+($queryRaw|$executeRaw)",
+                "transform": "{type}[]"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}
