@@ -83,7 +83,11 @@ const deleteOccurencies = async (id: string) => {
   }
 };
 
-const updateOccurrenceStatus = async (id: string, status: string) => {
+const updateOccurrenceStatus = async (
+  id: string,
+  status: string,
+  employeeId: string
+) => {
   if (!id || !status) {
     throw new BadRequestError('Id and status are required');
   }
@@ -114,7 +118,8 @@ const updateOccurrenceStatus = async (id: string, status: string) => {
       id
     },
     data: {
-      status: newStatus.toUpperCase()
+      status: newStatus.toUpperCase(),
+      employeeId
     }
   });
   if (!updatedOccurrence) {

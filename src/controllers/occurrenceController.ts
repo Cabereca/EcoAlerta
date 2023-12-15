@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import occurrenceService from '../services/occurrenceService';
+import { validateOccurrence } from '../utils/validadeOccurrence';
 
 const store = async (req: Request, res: Response) => {
   let data = req.body;
@@ -17,6 +18,13 @@ const store = async (req: Request, res: Response) => {
     lat,
     lng
   };
+
+  const result = validateOccurrence(data);
+
+  if (!result.success) {
+    const formatedErrors = result.error.format();
+    return res.status(400).send(formatedErrors);
+  }
 
   const occ = await occurrenceService.createOccurrence(data, files);
   console.log(occ);
@@ -44,8 +52,13 @@ const update = async (req: Request, res: Response) => {
 const updateStatus = async (req: Request, res: Response) => {
   const { id } = req.params;
   const { status } = req.body;
+  const { employeeId } = req.body;
 
-  const occ = await occurrenceService.updateOccurencies(id, status);
+  const occ = await occurrenceService.updateOccurrenceStatus(
+    id,
+    status,
+    employeeId
+  );
 
   return res.send(occ);
 };
