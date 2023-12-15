@@ -1,12 +1,13 @@
 /* eslint-disable @typescript-eslint/no-misused-promises */
 import { Router } from 'express';
 import employeeController from '../controllers/employeeController';
+import { adminMiddleware } from '../middlewares/adminMiddleware';
 
 const router = Router();
 
-router.get('/:id', employeeController.show);
+router.get('/:email', adminMiddleware, employeeController.show);
 router.post('/', employeeController.store);
-router.put('/:id', employeeController.update);
-router.delete('/:id', employeeController.destroy);
+router.put('/:email', adminMiddleware, employeeController.update);
+router.delete('/:email', adminMiddleware, employeeController.destroy);
 
 export default router;

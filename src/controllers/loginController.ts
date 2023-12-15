@@ -5,35 +5,66 @@ import { NotFoundError, UnauthorizedError } from '../helpers/api-errors';
 import bcrypt from 'bcrypt';
 import client from '../database/redis';
 import { userServices } from '../services/userService';
+import employeeService from '../services/employeeService';
 
-const login = async (req: Request, res: Response) => {
-    const { email, password } = req.body;
+const userLogin = async (req: Request, res: Response) => {
+  const { email, password } = req.body;
 
-    let user;
+  let user;
 
-    const cache = await client.get(email);
-    if (cache) {
-        user = JSON.parse(cache);
-    } else {
-        user = await userServices.findUserByEmail(email);
-        if (!user) {
-            throw new NotFoundError('User not Found');
-        }
-        await client.set(email, JSON.stringify(user));
+  const cache = await client.get('user:' + email);
+  if (cache) {
+    user = JSON.parse(cache);
+  } else {
+    user = await userServices.findUserByEmail(email);
+    if (!user) {
+      throw new NotFoundError('User not Found');
     }
-    const verifyPassword = await bcrypt.compare(password, user.password);
-    if (!verifyPassword) {
-        throw new UnauthorizedError('Usuário ou senha incorretos');
-    }
-    const token = userServices.generateToken({ email: user.email });
-    const { password: _, ...userWithoutPassword } = user;
+    await client.set('user:' + email, JSON.stringify(user));
+  }
+  const verifyPassword = await bcrypt.compare(password, user.password);
+  if (!verifyPassword) {
+    throw new UnauthorizedError('Usuário ou senha incorretos');
+  }
+  const token = userServices.generateToken({ email: user.email });
+  const { password: _, ...userWithoutPassword } = user;
 
-    return res.send({
-        user: {
-            ...userWithoutPassword
-        },
-        token
-    });
+  return res.send({
+    user: {
+      ...userWithoutPassword
+    },
+    token
+  });
 };
 
-export { login };
+const employeeLogin = async (req: Request, res: Response) => {
+  const { email, password } = req.body;
+
+  let employee;
+
+  const cache = await client.get('employee:' + email);
+  if (cache) {
+    employee = JSON.parse(cache);
+  } else {
+    employee = await userServices.findUserByEmail(email);
+    if (!employee) {
+      throw new NotFoundError('Employee not Found');
+    }
+    await client.set('employee:' + email, JSON.stringify(employee));
+  }
+  const verifyPassword = await bcrypt.compare(password, employee.password);
+  if (!verifyPassword) {
+    throw new UnauthorizedError('Usuário ou senha incorretos');
+  }
+  const token = employeeService.generateToken({ email: employee.email });
+  const { password: _, ...userWithoutPassword } = employee;
+
+  return res.send({
+    user: {
+      ...userWithoutPassword
+    },
+    token
+  });
+};
+
+export { userLogin, employeeLogin };
