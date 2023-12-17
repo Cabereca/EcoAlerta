@@ -16,6 +16,7 @@ export const userMiddleware = async (
   next: NextFunction
 ) => {
   const { authorization } = req.headers;
+  
   if (!authorization) {
     throw new UnauthorizedError('Não autorizado');
   }

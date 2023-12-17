@@ -1,14 +1,14 @@
 /* eslint-disable @typescript-eslint/no-misused-promises */
 import { Router } from 'express';
 import { userController } from '../controllers/userController';
-import { userMiddleware } from '../middlewares/userMiddleware';
+import { userMiddleware } from '../middlewares/authUserMiddleware';
+import { validateUserMiddleware } from '../middlewares/validateUserMiddleware';
 
 const routes = Router();
 
-routes.get('/', userController.findAllUsers);
-routes.get('/:id', userMiddleware, userController.findUser);
-routes.post('/', userController.createUser);
-routes.put('/:id', userMiddleware, userController.updateUser);
-routes.delete('/:id', userMiddleware, userController.deleteUser);
+routes.get('/', userMiddleware, userController.findUser);
+routes.post('/', validateUserMiddleware, userController.createUser);
+routes.put('/', userMiddleware, userController.updateUser);
+routes.delete('/', userMiddleware, userController.deleteUser);
 
 export default routes;

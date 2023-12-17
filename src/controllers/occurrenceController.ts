@@ -1,9 +1,9 @@
 import { Request, Response } from 'express';
 import occurrenceService from '../services/occurrenceService';
-import { validateOccurrence } from '../utils/validadeOccurrence';
 
 const store = async (req: Request, res: Response) => {
   let data = req.body;
+  const userId = req.user?.id;
   const reqFiles = req.files as Express.Multer.File[];
   const files = reqFiles.map((file) => {
     return {
@@ -18,13 +18,7 @@ const store = async (req: Request, res: Response) => {
     lat,
     lng
   };
-
-  const result = validateOccurrence(data);
-
-  if (!result.success) {
-    const formatedErrors = result.error.format();
-    return res.status(400).send(formatedErrors);
-  }
+  data.userId = userId as string;
 
   const occ = await occurrenceService.createOccurrence(data, files);
 
@@ -32,8 +26,8 @@ const store = async (req: Request, res: Response) => {
 };
 
 const show = async (req: Request, res: Response) => {
-  const { userId } = req.params;
-  const occ = await occurrenceService.findOccurrencies(userId);
+  const userId = req.user?.id;
+  const occ = await occurrenceService.findOccurrencies(userId as string);
   return res.send(occ);
 }
 
@@ -55,9 +49,7 @@ const update = async (req: Request, res: Response) => {
 const updateStatus = async (req: Request, res: Response) => {
   const { id } = req.params;
   const { status } = req.params;
-  const { employeeid } = req.headers;
-
-  
+  const employeeid = req.employee?.id;
 
   const occ = await occurrenceService.updateOccurrenceStatus(
     id,
@@ -71,7 +63,7 @@ const updateStatus = async (req: Request, res: Response) => {
 const destroy = async (req: Request, res: Response) => {
   const { id } = req.params;
 
-  const occ = await occurrenceService.deleteOccurencies(id);
+  await occurrenceService.deleteOccurencies(id);
 
   return res.status(204).send();
 };

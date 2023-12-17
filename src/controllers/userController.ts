@@ -10,32 +10,27 @@ const findAllUsers = async (req: Request, res: Response) => {
 }
 
 const findUser = async (req: Request, res: Response) => {
-    const { id } = req.params;
-    const user = await userServices.findUser(id);
+    const id = req.user?.id;
+    const user = await userServices.findUser(id as string);
     res.status(200).send(user);
 }
 
 const createUser = async (req: Request, res: Response) => {
-    const result = userValidateZod(req.body);
-    if (!result.success) {
-        const formattedError = result.error.format();
-        return res.status(400).send(formattedError);
-    }
     const user = req.body;
     const newUser = await userServices.createUser(user);
     res.status(201).send(newUser);
 }
 
 const updateUser = async (req: Request, res: Response) => {
-    const { id } = req.params;
+    const id = req.user?.id;
     const user = req.body;
-    const updatedUser = await userServices.updateUser(id, user);
+    const updatedUser = await userServices.updateUser(id as string, user);
     res.status(200).send(updatedUser);
 }
 
 const deleteUser = async (req: Request, res: Response) => {
-    const { id } = req.params;
-    await userServices.deleteUser(id);
+    const id = req.user?.id;
+    await userServices.deleteUser(id as string);
     res.sendStatus(204);
 }
 
