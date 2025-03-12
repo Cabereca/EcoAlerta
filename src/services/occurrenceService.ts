@@ -6,7 +6,7 @@ import {
   NotFoundError
 } from '../helpers/api-errors';
 
-const createOccurrence = async (occurrence: ICreateOccurrence, files: any) => {
+const createOccurrence = async (occurrence: ICreateOccurrence, files: any[]) => {
   const { title, description, dateTime, status, location, userId, employeeId } =
     occurrence;
   const occ = await prisma.occurrence.create({
@@ -20,7 +20,20 @@ const createOccurrence = async (occurrence: ICreateOccurrence, files: any) => {
     },
     userId,
     employeeId,
-    ImageOccurrence: files
+    ImageOccurrence: []
+  });
+
+  if (!occ) {
+    throw new InternalServerError('Error on create occurrence');
+  }
+
+  files.forEach(async (file) => {
+    await prisma.imageOccurrence.create({
+      data: {
+        path: file.path,
+        occurrenceId: occ.id,
+      }
+    });
   });
 
   return occ;
