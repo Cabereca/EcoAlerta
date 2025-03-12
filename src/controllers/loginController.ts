@@ -1,11 +1,11 @@
 /* eslint-disable @typescript-eslint/strict-boolean-expressions */
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
-import { type Request, type Response } from 'express';
-import { NotFoundError, UnauthorizedError } from '../helpers/api-errors';
 import bcrypt from 'bcrypt';
+import { type Request, type Response } from 'express';
 import client from '../database/redis';
-import { userServices } from '../services/userService';
+import { NotFoundError, UnauthorizedError } from '../helpers/api-errors';
 import employeeService from '../services/employeeService';
+import { userServices } from '../services/userService';
 
 const userLogin = async (req: Request, res: Response) => {
   const { email, password } = req.body;
@@ -13,6 +13,7 @@ const userLogin = async (req: Request, res: Response) => {
   let user;
 
   const cache = await client.get('user:' + email);
+
   if (cache) {
     user = JSON.parse(cache);
   } else {
@@ -22,7 +23,6 @@ const userLogin = async (req: Request, res: Response) => {
     }
     await client.set('user:' + email, JSON.stringify(user));
   }
-  
 
   const verifyPassword = await bcrypt.compare(password, user.password);
   if (!verifyPassword) {
@@ -43,7 +43,7 @@ const employeeLogin = async (req: Request, res: Response) => {
   const { email, password } = req.body;
 
   let employee;
-  
+
   const cache = await client.get('employee:' + email);
   if (cache) {
     employee = JSON.parse(cache);
@@ -70,4 +70,4 @@ const employeeLogin = async (req: Request, res: Response) => {
   });
 };
 
-export { userLogin, employeeLogin };
+export { employeeLogin, userLogin };

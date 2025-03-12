@@ -1,5 +1,5 @@
 import { prisma } from '../database/prisma';
-import { IGetOccurrence, type ICreateOccurrence } from '../dtos/OccurrenceDTO';
+import { type ICreateOccurrence } from '../dtos/OccurrenceDTO';
 import {
   BadRequestError,
   InternalServerError,
@@ -29,17 +29,69 @@ const createOccurrence = async (occurrence: ICreateOccurrence, files: any) => {
 const findAllOccurencies = async () => {
   const occs = await prisma.occurrence.findMany();
 
-  return occs as IGetOccurrence[];
-};
-
-const findOccurrencies = async (userId: string) => {
-  const oc = await prisma.occurrence.findManyByUser(userId);
-  if (!oc) {
+  if (!occs) {
     throw new NotFoundError('Occurrence not found');
   }
 
-  return oc;
+  const fullOccurrences = occs.map(async (occurrence) => {
+    const images = await prisma.imageOccurrence.findMany({
+      where: {
+        occurrenceId: occurrence.id
+      }
+    });
+    return {
+      ...occurrence,
+      images
+    };
+  });
+
+  const fullOccurrence = await Promise.all(fullOccurrences);
+
+  return fullOccurrence;
+};
+
+const findOccurrencies = async (userId: string) => {
+  const oc = (await prisma.occurrence.findManyByUser(userId));
+
+  if (!oc) {
+    throw new NotFoundError('Occurrence not found');
+  }
+  const fullOccurrences = oc.map(async (occurrence) => {
+    const images = await prisma.imageOccurrence.findMany({
+      where: {
+        occurrenceId: occurrence.id
+      }
+    });
+    return {
+      ...occurrence,
+      images
+    };
+  });
+
+  const fullOccurrence = await Promise.all(fullOccurrences);
+
+  return fullOccurrence;
 }
+
+const findOccurrence = async (id: string) => {
+  const oc = await prisma.occurrence.findUnique({
+    where: {
+      id
+    }
+  });
+  if (!oc) {
+    throw new NotFoundError('Occurrence not found');
+  }
+  const images = await prisma.imageOccurrence.findMany({
+    where: {
+      occurrenceId: oc.id
+    }
+  });
+  return {
+    ...oc,
+    images
+  };
+};
 
 const updateOccurencies = async (
   id: string,
@@ -50,7 +102,7 @@ const updateOccurencies = async (
       id
     }
   });
-  
+
   if (!oc) {
     throw new NotFoundError('Occurrence not found');
   }
@@ -93,6 +145,7 @@ const deleteOccurencies = async (id: string) => {
 const updateOccurrenceStatus = async (
   id: string,
   status: string,
+  feedback: string,
   employeeId: string
 ) => {
   if (!id || !status) {
@@ -106,8 +159,8 @@ const updateOccurrenceStatus = async (
     case 'in_progress':
       newStatus = 'in_progress';
       break;
-    case 'resolved':
-      newStatus = 'resolved';
+    case 'closed':
+      newStatus = 'closed';
       break;
     default:
       throw new BadRequestError('Invalid status');
@@ -126,7 +179,8 @@ const updateOccurrenceStatus = async (
     },
     data: {
       status: newStatus.toUpperCase(),
-      employeeId
+      employeeId,
+      feedback
     }
   });
   if (!updatedOccurrence) {
@@ -135,11 +189,23 @@ const updateOccurrenceStatus = async (
 
   return updatedOccurrence;
 };
+
+const findOccurrenceImages = async (id: string) => {
+  const images = await prisma.imageOccurrence.findMany({
+    where: {
+      occurrenceId: id
+    }
+  });
+  return images;
+}
+
 export default {
   createOccurrence,
   findAllOccurencies,
   findOccurrencies,
+  findOccurrence,
   updateOccurencies,
   updateOccurrenceStatus,
-  deleteOccurencies
+  deleteOccurencies,
+  findOccurrenceImages
 };

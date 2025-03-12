@@ -37,6 +37,11 @@ const show = async (req: Request, res: Response) => {
   return res.send(occ);
 }
 
+const showOne = async (req: Request, res: Response) => {
+  const { id } = req.params;
+  return await occurrenceService.findOccurrence(id);
+}
+
 const index = async (req: Request, res: Response) => {
   const occs = await occurrenceService.findAllOccurencies();
 
@@ -55,13 +60,15 @@ const update = async (req: Request, res: Response) => {
 const updateStatus = async (req: Request, res: Response) => {
   const { id } = req.params;
   const { status } = req.params;
+  const { feedback } = req.body;
   const { employeeid } = req.headers;
 
-  
+
 
   const occ = await occurrenceService.updateOccurrenceStatus(
     id,
     status,
+    feedback,
     employeeid as string
   );
 
@@ -71,7 +78,7 @@ const updateStatus = async (req: Request, res: Response) => {
 const destroy = async (req: Request, res: Response) => {
   const { id } = req.params;
 
-  const occ = await occurrenceService.deleteOccurencies(id);
+  await occurrenceService.deleteOccurencies(id);
 
   return res.status(204).send();
 };
@@ -80,6 +87,7 @@ export const occurrenceController = {
   store,
   index,
   show,
+  showOne,
   update,
   updateStatus,
   destroy

@@ -1,16 +1,17 @@
 import { Router } from 'express';
-import { occurrenceController } from '../controllers/occurrenceController';
-import uploadsConfig from '../config/multerConfig';
 import multer from 'multer';
-import { userMiddleware } from '../middlewares/userMiddleware';
+import uploadsConfig from '../config/multerConfig';
+import { occurrenceController } from '../controllers/occurrenceController';
 import { adminMiddleware } from '../middlewares/adminMiddleware';
+import { userMiddleware } from '../middlewares/userMiddleware';
 
 const routes = Router();
 
 const upload = multer(uploadsConfig);
 
-routes.get('/all', adminMiddleware, occurrenceController.index);
-routes.get('/:userId', userMiddleware, occurrenceController.show);
+routes.get('/all', occurrenceController.index);
+routes.get('/byUser/:userId', userMiddleware, occurrenceController.show);
+routes.get('/:id', userMiddleware, occurrenceController.showOne);
 routes.post(
   '/',
   userMiddleware,
